@@ -30,7 +30,7 @@ def main() -> None:
     # 3. Simple REPL loop
     while True:
         try:
-            user_input = input("\nUser (blank to exit): ")
+            user_input = input("\nUser (Please prompt the tool to fetch and summarise a page of your choice or blank + Enter to exit): ")
         except EOFError:
             print()
             break

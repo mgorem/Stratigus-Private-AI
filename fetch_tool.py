@@ -5,10 +5,10 @@ from bs4 import BeautifulSoup
 
 def fetch_webpage(url: str, max_chars: int = 4000) -> str:
     """
-
+    This tool will download a web page from a user's given URL and return safe, clean text.
     Using the fetch_tool to read, summarise, or analyse the contents
-    of a web page. The model then decides how to use the returned text
-    (e.g. summarise, extract key points, answer questions).
+    of a web page. This model then decides how to use the returned text
+    (i.e. summarise, extract key points, answer questions correctly).
     """
     # Basic validation
     if not (url.startswith("http://") or url.startswith("https://")):
