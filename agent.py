@@ -77,7 +77,7 @@ def main() -> None:
     while True:
         try:
             user_input = input("\nHello there! \n\nPlease type a prompt. Example prompt: \nAnalyse and summarise this page 'paste link url here' and press ENTER,"
-            "or leave a blank space and press ENTER to exit: ")
+            "or leave a blank space and press ENTER to exit:\n\n")
         except EOFError:
             print()
             break
@@ -87,7 +87,7 @@ def main() -> None:
 
         chat.add_user_message(user_input)
 
-        print("Stratigus' Assistant Answer: ", end="", flush=True)
+        print("\n\nStratigus' Assistant Answer:\n", end="", flush=True)
 
         # 4. Let the model decide when to call tools
         #    Here we expose the Python function as a tool.
@@ -103,3 +103,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+# Analyse, summarise and note any security or trust risks you can identify on this page 

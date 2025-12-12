@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Stratigus | Private AI Agent</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        textarea {
+            width: 100%;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .label {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .button {
+            margin-top: 10px;
+            padding: 8px 16px;
+        }
+
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            white-space: pre-wrap;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Stratigus | Private AI Agent</h1>
+
+        <form method="POST">
+            <div class="label">Enter URL or question:</div>
+            <textarea name="user_input" rows="3"
+                placeholder="e.g. Summarise the main ideas from https://example.com">{{ user_input }}</textarea>
+            <br>
+            <button class="button" type="submit">Analyse</button>
+        </form>
+
+        {% if result %}
+        <div class="label">Agent Response:</div>
+        <pre>{{ result }}</pre>
+        {% endif %}
+    </div>
+</body>
+
+</html>
