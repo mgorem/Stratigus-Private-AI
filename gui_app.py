@@ -1,7 +1,7 @@
 # gui_app.py
 import tkinter as tk
 from tkinter import scrolledtext, messagebox
-from agent_app import run_agent
+from agent_app import run_agent  # uses LM Studio + fetch_webpage
 
 
 def on_analyse_click():
@@ -10,8 +10,8 @@ def on_analyse_click():
         messagebox.showwarning("Input required", "Please enter a URL or question.")
         return
 
-    # Disable button while processing
     analyse_button.config(state=tk.DISABLED)
+    status_label.config(text="Status: Running...")
     output_box.delete("1.0", tk.END)
     output_box.insert(tk.END, "Analysing... please wait.\n")
 
@@ -19,32 +19,31 @@ def on_analyse_click():
         answer = run_agent(user_text)
         output_box.delete("1.0", tk.END)
         output_box.insert(tk.END, answer)
+        status_label.config(text="Status: Done")
     except Exception as e:
         output_box.delete("1.0", tk.END)
         output_box.insert(tk.END, f"Error: {e}")
+        status_label.config(text="Status: Error")
     finally:
         analyse_button.config(state=tk.NORMAL)
 
 
-# Create main window
 root = tk.Tk()
-root.title("Private AI Web Analysis Agent")
+root.title("Stratigus | Private AI Agent")
 
-# URL / question label + entry
 tk.Label(root, text="Enter URL or question about a webpage:").pack(pady=(10, 0))
 
 url_entry = tk.Entry(root, width=80)
 url_entry.pack(padx=10, pady=5)
 
-# Analyse button
 analyse_button = tk.Button(root, text="Analyse Web Page", command=on_analyse_click)
 analyse_button.pack(pady=5)
 
-# Output area
-tk.Label(root, text="Agent Response:").pack(pady=(10, 0))
+status_label = tk.Label(root, text="Status: Idle")
+status_label.pack(pady=(0, 5))
 
+tk.Label(root, text="Agent Response:").pack(pady=(10, 0))
 output_box = scrolledtext.ScrolledText(root, wrap=tk.WORD, width=90, height=25)
 output_box.pack(padx=10, pady=5)
 
-# Start GUI loop
 root.mainloop()
