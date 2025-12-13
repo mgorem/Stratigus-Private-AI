@@ -1,0 +1,6 @@
+flask
+flask-cors
+requests
+lmstudio
+beautifulsoup4
+openai
