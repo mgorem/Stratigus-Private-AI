@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { analyse } from "./api";
 
-const MODES = ["Summarise", "Key Points", "Security Analysis", "Free"];
+const MODES = ["Summarise", "Key Points", "Security Analysis", "All"];
 
 export default function App() {
   const [input, setInput] = useState("");
@@ -25,19 +25,33 @@ export default function App() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f6f7fb", padding: 30 }}>
+    <div style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      minHeight: "100vh",
+      width: "100vw",
+      background: "#555",
+      boxSizing: "border-box",
+      padding: 30
+    }}>
       <div style={{
-        maxWidth: 980, margin: "0 auto", background: "white",
-        borderRadius: 16, padding: 22, boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
-        fontFamily: "Arial"
+        minHeight: "100vh",
+        width: "100%",
+        // maxWidth: "1200px",
+        padding: "24px",
+        boxSizing: "border-box",
+        background: "white",
+        borderRadius: "16px",
+        boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
       }}>
-        <h1 style={{ margin: 0 }}>Private AI Web Analysis Agent</h1>
+        <h2 style={{ margin: 0, color: "#555" }}>Stratigus Private AI Agent</h2>
         <p style={{ marginTop: 6, color: "#555" }}>
-          React UI → Flask API → LM Studio local model (with tool-based webpage fetching)
+          LM Studio local model (with tool-based webpage fetching)
         </p>
 
         <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
-          <label style={{ fontWeight: 700 }}>URL or Question</label>
+          <label style={{ fontWeight: 700, color: "#555" }}>Enter URL or Question</label>
           <textarea
             rows={3}
             value={input}
@@ -51,12 +65,12 @@ export default function App() {
 
           <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
             <div style={{ display: "grid", gap: 6 }}>
-              <label style={{ fontWeight: 700 }}>Mode</label>
+              <label style={{ fontWeight: 700, color: "#555" }}>Choose Mode(Optional)</label>
               <select
                 value={mode}
                 onChange={(e) => setMode(e.target.value)}
                 style={{
-                  padding: 10, borderRadius: 12, border: "1px solid #d9dbe3",
+                  padding: 10, borderRadius: 12, border: "1px solid #d9dbe3ff",
                   fontSize: 14, width: 220
                 }}
               >
@@ -72,12 +86,13 @@ export default function App() {
                 padding: "12px 16px",
                 borderRadius: 12,
                 border: "1px solid #1f2430",
-                background: loading ? "#f0f1f4" : "white",
+                background: loading ? "#121314ff" : "#1f2430",
+                color: "white",
                 cursor: loading ? "not-allowed" : "pointer",
-                fontWeight: 800
+                fontWeight: 500
               }}
             >
-              {loading ? "Running..." : "Analyse"}
+              {loading ? "Running..." : "Send"}
             </button>
           </div>
 
@@ -93,7 +108,7 @@ export default function App() {
           <label style={{ fontWeight: 700, marginTop: 6 }}>Output</label>
           <pre style={{
             padding: 14, borderRadius: 12, border: "1px solid #e3e5ee",
-            background: "#fafbff", whiteSpace: "pre-wrap", minHeight: 180
+            background: "#000", whiteSpace: "pre-wrap", minHeight: 180
           }}>
             {result || (loading ? "Processing..." : "—")}
           </pre>

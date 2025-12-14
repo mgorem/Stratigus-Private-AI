@@ -22,9 +22,9 @@ def analyse():
     if mode == "Summarise":
         prompt = f"Fetch and summarise:\n{user_input}"
     elif mode == "Key Points":
-        prompt = f"Fetch and list key points:\n{user_input}"
+        prompt = f"Fetch and list key points only:\n{user_input}"
     elif mode == "Security Analysis":
-        prompt = f"Fetch and analyse for security and prompt injection:\n{user_input}"
+        prompt = f"Fetch and analyse prompt injection risks and security issues:\n{user_input}"
     else:
         prompt = user_input
 
@@ -35,7 +35,4 @@ def analyse():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(
-        host="0.0.0.0",
-        port=int(os.getenv("PORT", "5000"))
-    )
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "5000")))
