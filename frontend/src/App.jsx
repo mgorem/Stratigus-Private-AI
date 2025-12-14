@@ -1,22 +1,92 @@
-import { useState } from "react";
-import { analyse } from "./api";
+import { useEffect, useState } from "react";
+import { createRun, executeRun, getRun, listRuns } from "./api";
 
-const MODES = ["Summarise", "Key Points", "Security Analysis", "All"];
+const MODES = ["Summarise", "Key Points", "Security Analysis", "Free"];
 
 export default function App() {
   const [input, setInput] = useState("");
   const [mode, setMode] = useState(MODES[0]);
+
+  const [noStore, setNoStore] = useState(false);
+  const [redactBeforeStore, setRedactBeforeStore] = useState(true);
+
+  const [runs, setRuns] = useState([]);
+  const [activeRun, setActiveRun] = useState(null);
+
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState("");
   const [error, setError] = useState("");
+
+  async function refreshRuns() {
+    const data = await listRuns();
+    setRuns(data);
+  }
+
+  useEffect(() => {
+    refreshRuns().catch(() => { });
+  }, []);
+
+  async function openRun(runId) {
+    setError("");
+    try {
+      const detail = await getRun(runId);
+      setActiveRun(detail);
+    } catch (e) {
+      setError(e.message || String(e));
+    }
+  }
 
   async function onRun() {
     setError("");
-    setResult("");
     setLoading(true);
+
     try {
-      const out = await analyse({ input, mode });
-      setResult(out);
+      const basePayload = {
+        input,
+        mode,
+        no_store: noStore,
+        redact_before_store: redactBeforeStore,
+        require_confirm_if_pii: true,
+        confirmed_pii: false
+      };
+
+      let created = await createRun(basePayload);
+
+      if (created.requires_confirmation) {
+        const details = (created.findings || [])
+          .map(f => `- ${f.kind}: ${f.sample}`)
+          .join("\n");
+
+        const ok = window.confirm(
+          `Privacy warning:\n\n${created.message}\n\nDetected:\n${details}\n\nProceed?`
+        );
+
+        if (!ok) {
+          setLoading(false);
+          return;
+        }
+
+        created = await createRun({ ...basePayload, confirmed_pii: true });
+      }
+
+      await refreshRuns();
+
+      const exec = await executeRun(created.run_id);
+
+      if (exec.result) {
+        setActiveRun({
+          id: created.run_id,
+          mode,
+          input_text: noStore ? "(not stored)" : input,
+          status: exec.status,
+          result: exec.result,
+          error: null
+        });
+      } else {
+        const detail = await getRun(created.run_id);
+        setActiveRun(detail);
+      }
+
+      await refreshRuns();
     } catch (e) {
       setError(e.message || String(e));
     } finally {
@@ -25,93 +95,136 @@ export default function App() {
   }
 
   return (
-    <div style={{
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      minHeight: "100vh",
-      width: "100vw",
-      background: "#555",
-      boxSizing: "border-box",
-      padding: 30
-    }}>
-      <div style={{
-        minHeight: "100vh",
-        width: "100%",
-        // maxWidth: "1200px",
-        padding: "24px",
-        boxSizing: "border-box",
-        background: "white",
-        borderRadius: "16px",
-        boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
-      }}>
-        <h2 style={{ margin: 0, color: "#555" }}>Stratigus Private AI Agent</h2>
-        <p style={{ marginTop: 6, color: "#555" }}>
-          LM Studio local model (with tool-based webpage fetching)
-        </p>
+    <div style={{ minHeight: "100vh", background: "#f6f7fb", padding: 20 }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", display: "grid", gridTemplateColumns: "360px 1fr", gap: 16 }}>
+        {/* LEFT */}
+        <div style={{ background: "white", borderRadius: 16, padding: 16, boxShadow: "0 10px 30px rgba(0,0,0,0.08)", height: "calc(100vh - 40px)", overflow: "auto" }}>
+          <h2 style={{ marginTop: 0 }}>Run History</h2>
+          <button onClick={refreshRuns} style={{ width: "100%", padding: 10, borderRadius: 12, border: "1px solid #ddd", background: "white", fontWeight: 700 }}>
+            Refresh
+          </button>
 
-        <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
-          <label style={{ fontWeight: 700, color: "#555" }}>Enter URL or Question</label>
-          <textarea
-            rows={3}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Example: Summarise https://example.com"
-            style={{
-              padding: 12, borderRadius: 12, border: "1px solid #d9dbe3",
-              outline: "none", fontSize: 14
-            }}
-          />
-
-          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-            <div style={{ display: "grid", gap: 6 }}>
-              <label style={{ fontWeight: 700, color: "#555" }}>Choose Mode(Optional)</label>
-              <select
-                value={mode}
-                onChange={(e) => setMode(e.target.value)}
+          <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+            {runs.map(r => (
+              <div
+                key={r.id}
+                onClick={() => openRun(r.id)}
                 style={{
-                  padding: 10, borderRadius: 12, border: "1px solid #d9dbe3ff",
-                  fontSize: 14, width: 220
+                  border: "1px solid #eee",
+                  borderRadius: 12,
+                  padding: 12,
+                  cursor: "pointer",
+                  background: activeRun?.id === r.id ? "#f3f6ff" : "white"
                 }}
               >
-                {MODES.map((m) => <option key={m} value={m}>{m}</option>)}
-              </select>
-            </div>
-
-            <button
-              onClick={onRun}
-              disabled={loading || !input.trim()}
-              style={{
-                marginLeft: "auto",
-                padding: "12px 16px",
-                borderRadius: 12,
-                border: "1px solid #1f2430",
-                background: loading ? "#121314ff" : "#1f2430",
-                color: "white",
-                cursor: loading ? "not-allowed" : "pointer",
-                fontWeight: 500
-              }}
-            >
-              {loading ? "Running..." : "Send"}
-            </button>
+                <div style={{ fontWeight: 800, fontSize: 13 }}>{r.mode}</div>
+                <div style={{ fontSize: 12, color: "#555", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {r.input_text}
+                </div>
+                <div style={{ marginTop: 6, fontSize: 12 }}><b>Status:</b> {r.status}</div>
+                <div style={{ marginTop: 6, fontSize: 12 }}>
+                  <b>Privacy:</b>{" "}
+                  {r.no_store ? "No-store" : r.pii_detected ? `PII (${r.pii_summary || "detected"})` : "Normal"}
+                </div>
+              </div>
+            ))}
           </div>
+        </div>
 
-          {error && (
-            <div style={{
-              padding: 12, borderRadius: 12, border: "1px solid #ffb3b3",
-              background: "#fff5f5"
-            }}>
-              <b>Error:</b> {error}
+        {/* RIGHT */}
+        <div style={{ background: "white", borderRadius: 16, padding: 18, boxShadow: "0 10px 30px rgba(0,0,0,0.08)" }}>
+          <h1 style={{ margin: 0 }}>Stratigus Private AI Agent</h1>
+          <p style={{ marginTop: 6, color: "#555" }}>Local-first inference (LM Studio) with privacy guardrails and run history.</p>
+
+          <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
+            <label style={{ fontWeight: 800 }}>URL / Question</label>
+            <textarea
+              rows={3}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="https://example.com"
+              style={{ padding: 12, borderRadius: 12, border: "1px solid #d9dbe3" }}
+            />
+
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+              <div style={{ flex: "1 1 240px" }}>
+                <label style={{ fontWeight: 800 }}>Mode</label>
+                <select
+                  value={mode}
+                  onChange={(e) => setMode(e.target.value)}
+                  style={{ width: "100%", padding: 10, borderRadius: 12, border: "1px solid #d9dbe3" }}
+                >
+                  {MODES.map(m => <option key={m} value={m}>{m}</option>)}
+                </select>
+              </div>
+
+              <button
+                onClick={onRun}
+                disabled={loading || !input.trim()}
+                style={{
+                  flex: "1 1 200px",
+                  padding: "12px 16px",
+                  borderRadius: 12,
+                  border: "1px solid #1f2430",
+                  background: loading ? "#f0f1f4" : "white",
+                  fontWeight: 900,
+                  cursor: loading ? "not-allowed" : "pointer"
+                }}
+              >
+                {loading ? "Running..." : "Create & Execute Run"}
+              </button>
             </div>
-          )}
 
-          <label style={{ fontWeight: 700, marginTop: 6 }}>Output</label>
-          <pre style={{
-            padding: 14, borderRadius: 12, border: "1px solid #e3e5ee",
-            background: "#000", whiteSpace: "pre-wrap", minHeight: 180
-          }}>
-            {result || (loading ? "Processing..." : "—")}
-          </pre>
+            {/* Privacy toggles */}
+            <div style={{ display: "grid", gap: 8 }}>
+              <label style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                <input type="checkbox" checked={noStore} onChange={(e) => setNoStore(e.target.checked)} />
+                <span><b>Do not save this run</b> (ephemeral)</span>
+              </label>
+
+              <label style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                <input
+                  type="checkbox"
+                  checked={redactBeforeStore}
+                  onChange={(e) => setRedactBeforeStore(e.target.checked)}
+                  disabled={noStore}
+                />
+                <span><b>Redact detected personal data</b> before saving</span>
+              </label>
+
+              <div style={{ fontSize: 12, color: "#666" }}>
+                Privacy notice: avoid submitting personal/sensitive data unless you have permission.
+              </div>
+            </div>
+
+            {error && (
+              <div style={{ padding: 12, borderRadius: 12, border: "1px solid #ffb3b3", background: "#fff5f5" }}>
+                <b>Error:</b> {error}
+              </div>
+            )}
+
+            <h3 style={{ marginBottom: 6 }}>Run Details</h3>
+            {!activeRun ? (
+              <div style={{ color: "#666" }}>Select a run from the history list.</div>
+            ) : (
+              <div style={{ display: "grid", gap: 10 }}>
+                <div><b>ID:</b> {activeRun.id}</div>
+                <div><b>Status:</b> {activeRun.status}</div>
+                <div><b>Mode:</b> {activeRun.mode}</div>
+
+                {activeRun.error && (
+                  <div style={{ padding: 12, borderRadius: 12, border: "1px solid #ffb3b3", background: "#fff5f5" }}>
+                    <b>Backend Error:</b> {activeRun.error}
+                  </div>
+                )}
+
+                <label style={{ fontWeight: 800 }}>Output</label>
+                <pre style={{ padding: 14, borderRadius: 12, border: "1px solid #e3e5ee", background: "#fafbff", whiteSpace: "pre-wrap", wordBreak: "break-word", minHeight: 220 }}>
+                  {activeRun.result || "—"}
+                </pre>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
