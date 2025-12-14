@@ -1,8 +1,7 @@
 import os
 import lmstudio as lms
 from fetch_tool import fetch_webpage
-
-MODEL_ID = os.getenv("MODEL_ID", "qwen2.5-vl-7b-instruct")
+from config import MODEL_ID
 
 SYSTEM_PROMPT = (
     "You are a secure local web-analysis assistant. "

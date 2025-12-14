@@ -7,6 +7,7 @@ from models import Run
 from schemas import RunCreateRequest
 from privacy import detect_pii, redact_pii
 from agent_core import run_agent
+from config import PORT
 
 app = Flask(__name__)
 CORS(app)
@@ -155,4 +156,4 @@ def get_run(run_id: str):
         db.close()
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "5000")))
+    app.run(host="0.0.0.0", port=PORT)
