@@ -1,0 +1,44 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: stratigus-backend
+    environment:
+      - PORT=5000
+      - DB_URL=sqlite:///./runs.db
+      - MODEL_ID=qwen2.5-vl-7b-instruct
+    ports:
+      - "5000:5000"
+    volumes:
+      - backend_data:/app
+    healthcheck:
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/api/health').read()" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: stratigus-frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  # GUI container (optional — requires X server on host)
+  gui:
+    build:
+      context: ./desktop
+    container_name: stratigus-gui
+    environment:
+      - API_BASE=http://backend:5000
+      # X11 display target for Windows VcXsrv:
+      - DISPLAY=host.docker.internal:0.0
+    depends_on:
+      backend:
+        condition: service_healthy
+    profiles: [ "gui" ]
+volumes:
+  backend_data:

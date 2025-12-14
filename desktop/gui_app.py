@@ -1,8 +1,10 @@
 import tkinter as tk
 from tkinter import scrolledtext, messagebox
 import requests
+import os
 
-API_BASE = "http://localhost:5000"
+API_BASE = os.getenv("API_BASE", "http://localhost:5000")
+
 
 def create_and_execute():
     user_text = input_box.get().strip()
