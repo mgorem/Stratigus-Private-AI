@@ -2,7 +2,31 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.venv/
+venv/
+env/
+*.log
 
+# Node / React
+node_modules/
+dist/
+build/
+.vite/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local DB / runtime
+backend/runs.db
+backend/*.db
+backend/.pytest_cache/
 # C extensions
 *.so
 
@@ -72,3 +96,7 @@ Thumbs.db
 # Local environment variables or secret files
 *.env
 .env.*
+
+# App Main Env files
+backend/.env
+frontend/.env
