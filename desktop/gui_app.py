@@ -100,7 +100,7 @@ redact_var = tk.IntVar(value=1)
 tk.Checkbutton(frame, text="Do not save this run (ephemeral)", variable=no_store_var).pack(anchor="w")
 tk.Checkbutton(frame, text="Redact personal data before saving", variable=redact_var).pack(anchor="w", pady=(0,10))
 
-run_btn = tk.Button(frame, text="Create & Execute Run", command=create_and_execute)
+run_btn = tk.Button(frame, text="Create & Send", command=create_and_execute)
 run_btn.pack(fill="x")
 
 status_label = tk.Label(frame, text="Status: Idle")

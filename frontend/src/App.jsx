@@ -99,8 +99,8 @@ export default function App() {
       <div style={{ maxWidth: 1200, margin: "0 auto", display: "grid", gridTemplateColumns: "360px 1fr", gap: 16 }}>
         {/* LEFT */}
         <div style={{ background: "white", borderRadius: 16, padding: 16, boxShadow: "0 10px 30px rgba(0,0,0,0.08)", height: "calc(100vh - 40px)", overflow: "auto" }}>
-          <h2 style={{ marginTop: 0 }}>Run History</h2>
-          <button onClick={refreshRuns} style={{ width: "100%", padding: 10, borderRadius: 12, border: "1px solid #ddd", background: "white", fontWeight: 700 }}>
+          <h3 style={{ marginTop: 0, color: "#555" }}>Recent History</h3>
+          <button onClick={refreshRuns} style={{ width: "100%", padding: 10, borderRadius: 12, border: "1px solid #000", background: "white", fontWeight: 700, color: "#555", cursor: "pointer" }}>
             Refresh
           </button>
 
@@ -114,15 +114,16 @@ export default function App() {
                   borderRadius: 12,
                   padding: 12,
                   cursor: "pointer",
-                  background: activeRun?.id === r.id ? "#f3f6ff" : "white"
+                  background: activeRun?.id === r.id ? "#f3f6ff" : "white",
+                  color: activeRun?.id === r.id ? "#000" : "#333",
                 }}
               >
                 <div style={{ fontWeight: 800, fontSize: 13 }}>{r.mode}</div>
                 <div style={{ fontSize: 12, color: "#555", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {r.input_text}
                 </div>
-                <div style={{ marginTop: 6, fontSize: 12 }}><b>Status:</b> {r.status}</div>
-                <div style={{ marginTop: 6, fontSize: 12 }}>
+                <div style={{ marginTop: 6, fontSize: 12, color: "#555" }}><b>Status:</b> {r.status}</div>
+                <div style={{ marginTop: 6, fontSize: 12, color: "#555" }}>
                   <b>Privacy:</b>{" "}
                   {r.no_store ? "No-store" : r.pii_detected ? `PII (${r.pii_summary || "detected"})` : "Normal"}
                 </div>
@@ -133,11 +134,11 @@ export default function App() {
 
         {/* RIGHT */}
         <div style={{ background: "white", borderRadius: 16, padding: 18, boxShadow: "0 10px 30px rgba(0,0,0,0.08)" }}>
-          <h1 style={{ margin: 0 }}>Stratigus Private AI Agent</h1>
-          <p style={{ marginTop: 6, color: "#555" }}>Local-first inference (LM Studio) with privacy guardrails and run history.</p>
+          <h2 style={{ margin: 0, color: "#555" }}>Stratigus Private AI Agent</h2>
+          <p style={{ marginTop: 6, color: "#555" }}>Local-first inference (LM Studio) with privacy mode and run history.</p>
 
           <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
-            <label style={{ fontWeight: 800 }}>URL / Question</label>
+            <label style={{ fontWeight: 800 }}>Enter URL / Question</label>
             <textarea
               rows={3}
               value={input}
@@ -148,7 +149,7 @@ export default function App() {
 
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
               <div style={{ flex: "1 1 240px" }}>
-                <label style={{ fontWeight: 800 }}>Mode</label>
+                <label style={{ fontWeight: 800, color: "#555" }}>Choose Option</label>
                 <select
                   value={mode}
                   onChange={(e) => setMode(e.target.value)}
@@ -167,19 +168,21 @@ export default function App() {
                   borderRadius: 12,
                   border: "1px solid #1f2430",
                   background: loading ? "#f0f1f4" : "white",
+                  color: "#1f2430",
+                  hover: { background: loading ? "#f0f1f4" : "#555" },
                   fontWeight: 900,
                   cursor: loading ? "not-allowed" : "pointer"
                 }}
               >
-                {loading ? "Running..." : "Create & Execute Run"}
+                {loading ? "Running..." : "Create & Send"}
               </button>
             </div>
 
             {/* Privacy toggles */}
-            <div style={{ display: "grid", gap: 8 }}>
+            <div style={{ display: "grid", gap: 8, color: "#555" }}>
               <label style={{ display: "flex", gap: 10, alignItems: "center" }}>
                 <input type="checkbox" checked={noStore} onChange={(e) => setNoStore(e.target.checked)} />
-                <span><b>Do not save this run</b> (ephemeral)</span>
+                <span><b>Do not save this run</b></span>
               </label>
 
               <label style={{ display: "flex", gap: 10, alignItems: "center" }}>
@@ -188,6 +191,7 @@ export default function App() {
                   checked={redactBeforeStore}
                   onChange={(e) => setRedactBeforeStore(e.target.checked)}
                   disabled={noStore}
+                  style={{ background: "#fff" }}
                 />
                 <span><b>Redact detected personal data</b> before saving</span>
               </label>
@@ -203,23 +207,23 @@ export default function App() {
               </div>
             )}
 
-            <h3 style={{ marginBottom: 6 }}>Run Details</h3>
+            <h3 style={{ marginBottom: 6, color: "#555" }}>Run Details</h3>
             {!activeRun ? (
               <div style={{ color: "#666" }}>Select a run from the history list.</div>
             ) : (
-              <div style={{ display: "grid", gap: 10 }}>
+              <div style={{ display: "grid", gap: 10, color: "#555" }}>
                 <div><b>ID:</b> {activeRun.id}</div>
                 <div><b>Status:</b> {activeRun.status}</div>
                 <div><b>Mode:</b> {activeRun.mode}</div>
 
                 {activeRun.error && (
-                  <div style={{ padding: 12, borderRadius: 12, border: "1px solid #ffb3b3", background: "#fff5f5" }}>
+                  <div style={{ padding: 12, borderRadius: 12, border: "1px solid #ffb3b3", background: "#fff5f5", color: "#555" }}>
                     <b>Backend Error:</b> {activeRun.error}
                   </div>
                 )}
 
                 <label style={{ fontWeight: 800 }}>Output</label>
-                <pre style={{ padding: 14, borderRadius: 12, border: "1px solid #e3e5ee", background: "#fafbff", whiteSpace: "pre-wrap", wordBreak: "break-word", minHeight: 220 }}>
+                <pre style={{ padding: 14, borderRadius: 12, border: "1px solid #e3e5ee", background: "#fafbff", whiteSpace: "pre-wrap", wordBreak: "break-word", minHeight: 220, color: "#555" }}>
                   {activeRun.result || "—"}
                 </pre>
               </div>
